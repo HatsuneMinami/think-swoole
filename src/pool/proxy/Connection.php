@@ -238,4 +238,35 @@ class Connection extends Proxy implements ConnectionInterface
     {
         return $this->__call(__FUNCTION__, func_get_args());
     }
+    
+        /**
+     * 获取连接池pdo连接
+     * @access public
+     * @param \think\db\ConnectionInterface
+     */
+    public function getPoolConnection($transaction_id='')
+    {
+        if($transaction_id){
+            $connection = $this->pool->borrow();
+            $connection->{static::KEY_RELEASED} = false;
+            return $connection;
+        }else{
+            return parent::getPoolConnection();
+        }
+    }
+
+    /**
+     * 释放连接池pdo连接
+     * @access public
+     * @return \think\db\ConnectionInterface
+     * @return void
+     */
+    public function releasePoolConnect($connection)
+    {
+        if ($connection->{static::KEY_RELEASED}) {
+            return;
+        }
+        $connection->{static::KEY_RELEASED} = true;
+        $this->pool->return($connection);
+    }
 }
